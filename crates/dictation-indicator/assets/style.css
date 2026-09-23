@@ -1,0 +1,24 @@
+window {
+  background-color: transparent;
+}
+
+.pill {
+  background-color: @BG@;
+  border: 1px solid @ACCENT@;
+  border-radius: 22px;
+  padding: 6px 16px;
+}
+
+.mic {
+  color: @ACCENT@;
+}
+
+.activity {
+  color: @ACCENT@;
+}
+
+.label {
+  font-family: "@FONT@";
+  font-size: 14px;
+  color: @TEXT@;
+}

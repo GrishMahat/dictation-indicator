@@ -1,0 +1,30 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/dictation-config",
+    "crates/dictation-core",
+    "crates/dictation-cli",
+    "crates/dictation-native",
+    "crates/dictation-indicator",
+]
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+license = "MIT"
+
+[workspace.dependencies]
+dictation-config = { path = "crates/dictation-config" }
+dictation-core = { path = "crates/dictation-core" }
+dictation-native = { path = "crates/dictation-native" }
+dirs = "5"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+libc = "0.2"
+gtk4 = "0.8"
+gtk4-layer-shell = "0.3"
+notify = "8"
+
+[profile.release]
+strip = true
+lto = true

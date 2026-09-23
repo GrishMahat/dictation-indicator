@@ -1,0 +1,15 @@
+[package]
+name = "dictation-native"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+dictation-config.workspace = true
+dictation-core.workspace = true
+libc.workspace = true
+cpal = "0.15"
+vosk = "0.3"
+whisper-rs = "0.16"
+sherpa-onnx = { version = "1.13.8", default-features = false, features = ["shared"] }
+evdev = "0.12"

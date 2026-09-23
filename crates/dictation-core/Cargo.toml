@@ -1,0 +1,9 @@
+[package]
+name = "dictation-core"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+dictation-config.workspace = true
+libc.workspace = true

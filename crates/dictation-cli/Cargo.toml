@@ -1,0 +1,14 @@
+[package]
+name = "dictation-cli"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "dictation"
+path = "src/main.rs"
+
+[dependencies]
+dictation-config.workspace = true
+dictation-core.workspace = true
+dictation-native.workspace = true
