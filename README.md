@@ -27,7 +27,10 @@ service. Models are downloaded separately and remain on your machine.
 
 ## Quick start
 
-See [Installation](docs/INSTALLATION.md) for build dependencies and setup.
+Grab a prebuilt Linux x86_64 binary from the
+[Releases page](https://github.com/GrishMahat/dictation-indicator/releases),
+or build from source — see [Installation](docs/INSTALLATION.md) for build
+dependencies and setup.
 
 ```bash
 make release

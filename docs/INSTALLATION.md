@@ -9,12 +9,14 @@ indicator.
 On Arch Linux:
 
 ```bash
-sudo pacman -S base-devel cmake clang gtk4 gtk4-layer-shell alsa-lib
+sudo pacman -S base-devel cmake clang gtk4 gtk4-layer-shell alsa-lib vosk-api
 ```
 
 Install a stable Rust toolchain with Cargo. Building Whisper also needs a C/C++
 toolchain and libclang for bindings generation; the package group above
-provides those on Arch.
+provides those on Arch. `vosk-api` provides `libvosk.so`, which the Vosk
+backend links against; it is required to link the binaries even when you
+plan to use a different backend.
 
 Model installation uses `curl` and the archive tools `tar` and `unzip`. Install
 them if they are not already present:
