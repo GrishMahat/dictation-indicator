@@ -29,6 +29,12 @@ pub(super) fn run(cfg: &Config) -> i32 {
     if cfg.validation_errors().is_empty() {
         println!("[ok] active model files");
     }
+    // Same provider preflight the daemon runs at startup: missing build support
+    // or a device not visible to the process shows up before model loading.
+    match dictation_native::provider_status(&cfg.engine) {
+        Ok(status) => check("compute provider", true, &status, &mut failed),
+        Err(issue) => check("compute provider", false, &issue, &mut failed),
+    }
     if cfg.engine.model_management {
         for (label, program, arg) in [
             ("download tool", "curl", "--version"),

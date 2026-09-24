@@ -17,10 +17,12 @@ pub fn whisper_bench_model(
     }
 
     let mut candidate = engine.clone();
+    candidate.backend = "whisper".to_string();
     candidate.whisper_model = model_path.to_string();
     let (rss_before, _) = process_memory_mib();
     let load_started = Instant::now();
-    let mut whisper = WhisperSegmenter::new(&candidate)?;
+    let provider = crate::provider::resolve(&candidate)?;
+    let mut whisper = WhisperSegmenter::new(&candidate, provider)?;
     let load_time = load_started.elapsed();
     let (rss_loaded, _) = process_memory_mib();
 
@@ -292,7 +294,10 @@ fn resample_to_16k(samples: &[i16], rate: u32) -> Vec<i16> {
 pub fn whisper_bench(engine: &EngineConfig, wav_path: &str) -> Result<String, String> {
     let (pcm, rate) = read_wav(wav_path)?;
     let pcm = resample_to_16k(&pcm, rate);
-    let mut w = WhisperSegmenter::new(engine)?;
+    let mut candidate = engine.clone();
+    candidate.backend = "whisper".to_string();
+    let provider = crate::provider::resolve(&candidate)?;
+    let mut w = WhisperSegmenter::new(&candidate, provider)?;
     let model_name = std::path::Path::new(&engine.whisper_model)
         .file_name()
         .and_then(|name| name.to_str())

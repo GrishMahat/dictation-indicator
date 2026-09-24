@@ -2,6 +2,9 @@ use crate::{EngineConfig, IndicatorConfig};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+/// Upper bound accepted for `engine.threads`, preventing unreasonable thread requests.
+const MAX_THREADS: usize = 128;
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
@@ -107,6 +110,27 @@ impl Config {
             }
             "whisper" | "vosk" | "native" | "moonshine" | "zipformer" | "sensevoice" => {}
             backend => errors.push(format!("unsupported engine.backend: {backend}")),
+        }
+
+        // Only Whisper has GPU code paths today: the sherpa-onnx prebuilt
+        // runtime and Vosk are CPU-only, so a pinned GPU device would be
+        // silently ignored — reject it instead.
+        if self.engine.provider.is_gpu() && self.engine.backend != "whisper" {
+            errors.push(format!(
+                "engine.provider = \"{}\" is only supported by the whisper backend (backend is `{}`); use \"auto\" or \"cpu\"",
+                self.engine.provider.as_str(),
+                self.engine.backend
+            ));
+        }
+        if self.engine.threads > MAX_THREADS {
+            errors.push(format!(
+                "engine.threads must be 0 (auto) or at most {MAX_THREADS}"
+            ));
+        }
+        if self.engine.threads > 0 && matches!(self.engine.backend.as_str(), "vosk" | "native") {
+            errors.push(
+                "engine.threads is not supported by Vosk; set it to 0 to use Vosk's default".into(),
+            );
         }
         errors
     }

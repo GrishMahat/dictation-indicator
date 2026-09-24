@@ -24,7 +24,10 @@ pub(super) struct MoonshineSegmenter {
 }
 
 impl MoonshineSegmenter {
-    pub(super) fn new(engine: &EngineConfig) -> Result<Self, String> {
+    pub(super) fn new(
+        engine: &EngineConfig,
+        provider: crate::provider::ProviderCandidate,
+    ) -> Result<Self, String> {
         let dir = Path::new(&engine.moonshine_model_dir);
         let mut config = OfflineRecognizerConfig::default();
         let v2_encoder = dir.join("encoder_model.ort");
@@ -58,8 +61,10 @@ impl MoonshineSegmenter {
             }
         };
         config.model_config.tokens = Some(dir.join("tokens.txt").to_string_lossy().into_owned());
-        config.model_config.provider = Some("cpu".into());
-        config.model_config.num_threads = THREADS;
+        // sherpa-onnx backends are CPU-only in this build; `create` resolves
+        // and validates the provider before entering this constructor.
+        config.model_config.provider = Some(provider.as_str().into());
+        config.model_config.num_threads = crate::provider::resolve_threads(engine, THREADS);
         config.model_config.model_type = Some("moonshine".into());
         let recognizer = OfflineRecognizer::create(&config)
             .ok_or_else(|| format!("could not load Moonshine Tiny int8 models from `{}`; download the sherpa-onnx Moonshine Tiny English package", dir.display()))?;

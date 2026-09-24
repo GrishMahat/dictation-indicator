@@ -170,16 +170,24 @@ pub(super) struct WhisperSegmenter {
 }
 
 impl WhisperSegmenter {
-    pub(super) fn new(engine: &EngineConfig) -> Result<Self, String> {
+    pub(super) fn new(
+        engine: &EngineConfig,
+        provider: crate::provider::ProviderCandidate,
+    ) -> Result<Self, String> {
         let path = &engine.whisper_model;
-        let ctx = WhisperContext::new_with_params(path, WhisperContextParameters::new())
+        // GPU builds default to `use_gpu = true`, so an explicit
+        // `provider = "cpu"` must turn it back off instead of being ignored.
+        let mut context_params = WhisperContextParameters::new();
+        context_params.use_gpu(provider.is_gpu());
+        let ctx = WhisperContext::new_with_params(path, context_params)
             .map_err(|e| format!("whisper model load failed: `{path}` ({e:?})"))?;
         let state = ctx
             .create_state()
             .map_err(|e| format!("whisper state creation failed ({e:?})"))?;
-        let threads = std::thread::available_parallelism()
+        let auto_threads = std::thread::available_parallelism()
             .map(|n| n.get().min(MAX_THREADS as usize) as i32)
             .unwrap_or(4);
+        let threads = crate::provider::resolve_threads(engine, auto_threads);
         Ok(Self {
             state,
             threads,
@@ -355,7 +363,10 @@ impl Segmenter for WhisperSegmenter {
 /// no microphone or speech needed. Whatever text comes back (even "")
 /// proves every stage ran.
 pub fn whisper_selftest(engine: &EngineConfig) -> Result<String, String> {
-    let mut w = WhisperSegmenter::new(engine)?;
+    let mut candidate = engine.clone();
+    candidate.backend = "whisper".to_string();
+    let provider = crate::provider::resolve(&candidate)?;
+    let mut w = WhisperSegmenter::new(&candidate, provider)?;
     // 1 s of 440 Hz at 16 kHz.
     w.buf = (0..crate::audio::RATE)
         .map(|i| {

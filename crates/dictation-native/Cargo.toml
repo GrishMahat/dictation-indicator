@@ -13,3 +13,14 @@ vosk = "0.3"
 whisper-rs = "0.16"
 sherpa-onnx = { version = "1.13.8", default-features = false, features = ["shared"] }
 evdev = "0.12"
+
+[features]
+default = []
+# GPU backends are compile-time: each compiles whisper.cpp with that toolkit
+# (Vulkan needs the SDK/shaderc, CUDA the CUDA toolkit, HIP a ROCm install).
+# Without the matching feature the config can still say `provider = "vulkan"`,
+# but startup fails with a rebuild hint instead of silently running on CPU.
+gpu-vulkan = ["whisper-rs/vulkan"]
+gpu-cuda = ["whisper-rs/cuda"]
+gpu-hip = ["whisper-rs/hipblas"]
+gpu-metal = ["whisper-rs/metal"]

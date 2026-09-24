@@ -31,11 +31,54 @@ impl TypingBackend {
     }
 }
 
+/// Where recognition runs.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum Provider {
+    /// Probe the machine once at startup and use the best device available.
+    #[default]
+    Auto,
+    /// Force CPU inference.
+    Cpu,
+    /// GPU through Vulkan (any vendor; works on AMD/Intel/NVIDIA).
+    Vulkan,
+    /// GPU through CUDA (NVIDIA only).
+    Cuda,
+    /// GPU through HIP/ROCm (AMD discrete GPUs).
+    Hip,
+    /// GPU through Metal (Apple only).
+    Metal,
+}
+
+impl Provider {
+    /// Spelling used in the config file.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Auto => "auto",
+            Self::Cpu => "cpu",
+            Self::Vulkan => "vulkan",
+            Self::Cuda => "cuda",
+            Self::Hip => "hip",
+            Self::Metal => "metal",
+        }
+    }
+
+    /// Whether this pins a GPU device (as opposed to `auto` or `cpu`).
+    pub fn is_gpu(self) -> bool {
+        !matches!(self, Self::Auto | Self::Cpu)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct EngineConfig {
     /// Recognition backend: `whisper`, `vosk`, `moonshine`, `zipformer`, or `sensevoice`.
     pub backend: String,
+    /// Compute provider: `auto`, `cpu`, `vulkan`, `cuda`, `hip`, or `metal`.
+    /// Only the Whisper backend has GPU paths today; others run on CPU.
+    pub provider: Provider,
+    /// Whisper/sherpa-onnx threads; `0` selects a backend default. Vosk uses its own policy.
+    pub threads: usize,
     /// Vosk model directory.
     pub model_path: String,
     /// Whisper ggml model file.
@@ -66,6 +109,8 @@ impl Default for EngineConfig {
             data.join("dictation/models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09");
         Self {
             backend: "whisper".into(),
+            provider: Provider::Auto,
+            threads: 0,
             model_path: vosk.to_string_lossy().into_owned(),
             whisper_model: whisper.to_string_lossy().into_owned(),
             moonshine_model_dir: moonshine.to_string_lossy().into_owned(),

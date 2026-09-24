@@ -18,7 +18,10 @@ pub(super) struct SenseVoiceSegmenter {
 }
 
 impl SenseVoiceSegmenter {
-    pub(super) fn new(engine: &EngineConfig) -> Result<Self, String> {
+    pub(super) fn new(
+        engine: &EngineConfig,
+        provider: crate::provider::ProviderCandidate,
+    ) -> Result<Self, String> {
         let dir = Path::new(&engine.sense_voice_model_dir);
         let mut config = OfflineRecognizerConfig::default();
         config.model_config.sense_voice = OfflineSenseVoiceModelConfig {
@@ -27,8 +30,10 @@ impl SenseVoiceSegmenter {
             use_itn: true,
         };
         config.model_config.tokens = Some(dir.join("tokens.txt").to_string_lossy().into_owned());
-        config.model_config.provider = Some("cpu".into());
-        config.model_config.num_threads = 2;
+        // CPU-only in this build; `create` resolves and validates the
+        // provider before entering this constructor.
+        config.model_config.provider = Some(provider.as_str().into());
+        config.model_config.num_threads = crate::provider::resolve_threads(engine, 2);
         config.model_config.model_type = Some("sense_voice".into());
         let recognizer = OfflineRecognizer::create(&config)
             .ok_or_else(|| format!("could not load SenseVoice model from `{}`", dir.display()))?;
