@@ -21,7 +21,7 @@ fn spawn_detached(cmd: &mut Command) -> io::Result<()> {
 /// Launch the configured daemon.
 pub fn begin(config: &EngineConfig) -> io::Result<()> {
     match config.backend.as_str() {
-        "native" | "vosk" | "whisper" | "moonshine" | "zipformer" => {
+        "native" | "vosk" | "whisper" | "moonshine" | "zipformer" | "sensevoice" => {
             let executable = std::env::current_exe()?;
             let mut command = Command::new(executable);
             command

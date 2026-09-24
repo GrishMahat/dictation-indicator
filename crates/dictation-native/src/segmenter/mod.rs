@@ -2,6 +2,7 @@
 
 mod benchmark;
 mod moonshine;
+mod sensevoice;
 mod vosk;
 mod whisper;
 mod zipformer;
@@ -24,6 +25,7 @@ pub fn create(engine: &EngineConfig) -> Result<Box<dyn Segmenter>, String> {
         "whisper" => Ok(Box::new(whisper::WhisperSegmenter::new(engine)?)),
         "vosk" | "native" => Ok(Box::new(vosk::VoskSegmenter::new(engine)?)),
         "moonshine" => Ok(Box::new(moonshine::MoonshineSegmenter::new(engine)?)),
+        "sensevoice" => Ok(Box::new(sensevoice::SenseVoiceSegmenter::new(engine)?)),
         "zipformer" => Ok(Box::new(zipformer::ZipformerSegmenter::new(engine)?)),
         other => Err(format!("unknown backend `{other}`")),
     }

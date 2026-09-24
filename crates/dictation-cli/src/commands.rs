@@ -8,6 +8,8 @@ use dictation_core::control;
 
 mod benchmark;
 mod config;
+mod doctor;
+mod model;
 mod status;
 
 const USAGE: &str = "\
@@ -23,6 +25,8 @@ Commands:
             Compare recognition backends for speed, memory, and transcript quality
             (`--reference-file PATH` accepts a transcript file)
   benchmark-tune [wav] Compare encoder windows and thread counts for current model
+  model <check|list|info|install|remove|set|recommend|benchmark|management> Manage recognition models
+  doctor    Diagnose configuration, model, audio and typing setup
 ";
 
 pub fn run(args: &[String], cfg: &Config) -> i32 {
@@ -102,6 +106,8 @@ pub fn run(args: &[String], cfg: &Config) -> i32 {
                 }
             };
         }
+        "model" => return model::run(args, cfg),
+        "doctor" => return doctor::run(cfg),
         "benchmark-tune" | "__whisper-bench" => {
             let path = args.get(2).map_or_else(
                 || {

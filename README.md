@@ -102,17 +102,51 @@ text = "#cdd6f4"
 font = "JetBrainsMono Nerd Font" # optional; used for the label
 
 [engine]
-backend = "whisper"        # whisper | vosk | moonshine | zipformer
+backend = "whisper"        # whisper | vosk | moonshine | zipformer | sensevoice
 typing_backend = "uinput"  # "uinput" (default, built in) | "wtype"
                            # | "dotool" | "ydotool" | "xdotool"
 whisper_model = "/home/you/.local/share/dictation/models/ggml-base.en-q5_1.bin"
 model_path = "/home/you/.local/share/vocalinux/models/vosk-model-small-en-us-0.15"
 moonshine_model_dir = "/home/you/.local/share/dictation/models/sherpa-onnx-moonshine-tiny-en-int8"
 zipformer_model_dir = "/home/you/.local/share/dictation/models/sherpa-onnx-streaming-zipformer-en-20M-2023-02-17"
+sense_voice_model_dir = "/home/you/.local/share/dictation/models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09"
 audio_device = ""          # mic name substring; empty = system default
+model_management = true     # allow dictation model install/set/remove
 ```
 
 Restart the indicator after editing.
+
+### Model management and diagnostics
+
+`dictation model list` shows each model's family, language, approximate download
+size, installed/active status, and the next command to run. Filter the catalog
+with `dictation model list --backend vosk`, or show only local models with
+`dictation model list --installed`. `dictation model info <name>` shows full
+details, the download source, and install/select/remove commands.
+`dictation model check` checks the active model; add a catalog name to check
+that model's required files.
+Install downloads with `curl` and resumes interrupted transfers when run again:
+
+```bash
+dictation model install whisper-base.en
+dictation model set whisper-base.en
+dictation model recommend
+dictation model benchmark /path/to/short-sample.wav --model whisper-tiny.en
+dictation model remove whisper-tiny.en
+dictation model management off  # disable CLI install/set/remove
+dictation doctor
+```
+
+The catalog includes Whisper, Vosk, Moonshine, SenseVoice, and Zipformer
+models. Vosk offers many languages and both small and large models; Moonshine
+includes English and multilingual releases; SenseVoice supports English,
+Chinese, Cantonese, Japanese, and Korean. Whisper includes multiple sizes and
+quantizations. Larger models can require multiple gigabytes of memory and disk.
+Custom Whisper model files can be selected with
+`dictation model set /path/to/model.bin`. Recommendations use currently
+available system memory as a rough starting point; benchmark with representative
+audio on the target machine before switching models. Managed downloads live in
+`~/.local/share/dictation/models/`.
 
 ### Moonshine and Zipformer model files
 
@@ -206,13 +240,14 @@ twice — and `uinput` doesn't spawn anything.
       live while you're still talking; finalizes on a short pause,
     - `vosk` — streaming recognizer, tiny models (ultra-low-resource
       / existing-vosk-model compatibility),
-    - `zipformer` — streaming English 20M int8 model through sherpa-onnx,
-    - `moonshine` — Moonshine Tiny English int8, with bounded rolling updates,
+    - `zipformer` — streaming English int8 model through sherpa-onnx,
+    - `moonshine` — English and multilingual models with bounded offline updates,
+    - `sensevoice` — multilingual SenseVoiceSmall int8 via sherpa-onnx,
   - typing via `engine.typing_backend`: `uinput` (built in) plus the
     external `wtype`, `dotool`, `ydotool` and `xdotool`.
-- **Phase 3**: more backends behind the same `Segmenter` trait —
-  Moonshine (tiny real-time models), SenseVoice (multilingual).
-  (The legacy nerd backend was retired in Phase 2.)
+- **Phase 3 (done)**: managed model catalog, resumable downloads, persistent
+  model selection, model checks/recommendations, and diagnostics; added Vosk
+  language models, Moonshine v2, and SenseVoice support.
 
 ## Whisper latency (what makes it feel live)
 

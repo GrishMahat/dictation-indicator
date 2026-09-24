@@ -55,8 +55,8 @@ pub(super) fn auto_audio_ctx(len: usize) -> i32 {
     (frames.div_ceil(AC_ROUND) * AC_ROUND).clamp(AC_ROUND, AC_MAX) as i32
 }
 
-fn buf_ms(len: usize) -> u32 {
-    (len as u64 * 100 / crate::audio::RATE as u64) as u32
+pub(super) fn buf_ms(len: usize) -> u32 {
+    (len as u64 * 1000 / crate::audio::RATE as u64) as u32
 }
 
 /// Decode a PCM slice to text (shared by rolling chunks and the tail).

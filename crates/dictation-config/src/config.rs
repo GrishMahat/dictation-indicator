@@ -30,14 +30,21 @@ impl Config {
                     self.engine.whisper_model
                 ));
             }
-            "vosk" | "native" if !PathBuf::from(&self.engine.model_path).is_dir() => {
+            "vosk" | "native"
+                if !PathBuf::from(&self.engine.model_path)
+                    .join("am/final.mdl")
+                    .is_file()
+                    || !PathBuf::from(&self.engine.model_path)
+                        .join("conf/model.conf")
+                        .is_file() =>
+            {
                 errors.push(format!(
-                    "Vosk model directory does not exist: {}",
+                    "Vosk model files are missing from: {}",
                     self.engine.model_path
                 ));
             }
             "moonshine"
-                if ![
+                if !([
                     "preprocess.onnx",
                     "encode.int8.onnx",
                     "uncached_decode.int8.onnx",
@@ -49,10 +56,20 @@ impl Config {
                     PathBuf::from(&self.engine.moonshine_model_dir)
                         .join(file)
                         .is_file()
-                }) =>
+                }) || ![
+                    "encoder_model.ort",
+                    "decoder_model_merged.ort",
+                    "tokens.txt",
+                ]
+                .iter()
+                .all(|file| {
+                    PathBuf::from(&self.engine.moonshine_model_dir)
+                        .join(file)
+                        .is_file()
+                })) =>
             {
                 errors.push(format!(
-                    "Moonshine Tiny int8 model files are missing from: {}",
+                    "Moonshine model files are missing from: {}",
                     self.engine.moonshine_model_dir
                 ));
             }
@@ -75,7 +92,20 @@ impl Config {
                     self.engine.zipformer_model_dir
                 ));
             }
-            "whisper" | "vosk" | "native" | "moonshine" | "zipformer" => {}
+            "sensevoice"
+                if !PathBuf::from(&self.engine.sense_voice_model_dir)
+                    .join("model.int8.onnx")
+                    .is_file()
+                    || !PathBuf::from(&self.engine.sense_voice_model_dir)
+                        .join("tokens.txt")
+                        .is_file() =>
+            {
+                errors.push(format!(
+                    "SenseVoice model files are missing from: {}",
+                    self.engine.sense_voice_model_dir
+                ));
+            }
+            "whisper" | "vosk" | "native" | "moonshine" | "zipformer" | "sensevoice" => {}
             backend => errors.push(format!("unsupported engine.backend: {backend}")),
         }
         errors

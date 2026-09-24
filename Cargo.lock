@@ -418,6 +418,8 @@ dependencies = [
  "dictation-config",
  "dictation-core",
  "dictation-native",
+ "dirs",
+ "toml",
 ]
 
 [[package]]

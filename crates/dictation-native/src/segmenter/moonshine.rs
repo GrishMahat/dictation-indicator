@@ -27,20 +27,35 @@ impl MoonshineSegmenter {
     pub(super) fn new(engine: &EngineConfig) -> Result<Self, String> {
         let dir = Path::new(&engine.moonshine_model_dir);
         let mut config = OfflineRecognizerConfig::default();
-        config.model_config.moonshine = OfflineMoonshineModelConfig {
-            preprocessor: Some(dir.join("preprocess.onnx").to_string_lossy().into_owned()),
-            encoder: Some(dir.join("encode.int8.onnx").to_string_lossy().into_owned()),
-            uncached_decoder: Some(
-                dir.join("uncached_decode.int8.onnx")
-                    .to_string_lossy()
-                    .into_owned(),
-            ),
-            cached_decoder: Some(
-                dir.join("cached_decode.int8.onnx")
-                    .to_string_lossy()
-                    .into_owned(),
-            ),
-            merged_decoder: None,
+        let v2_encoder = dir.join("encoder_model.ort");
+        config.model_config.moonshine = if v2_encoder.is_file() {
+            OfflineMoonshineModelConfig {
+                preprocessor: None,
+                encoder: Some(v2_encoder.to_string_lossy().into_owned()),
+                uncached_decoder: None,
+                cached_decoder: None,
+                merged_decoder: Some(
+                    dir.join("decoder_model_merged.ort")
+                        .to_string_lossy()
+                        .into_owned(),
+                ),
+            }
+        } else {
+            OfflineMoonshineModelConfig {
+                preprocessor: Some(dir.join("preprocess.onnx").to_string_lossy().into_owned()),
+                encoder: Some(dir.join("encode.int8.onnx").to_string_lossy().into_owned()),
+                uncached_decoder: Some(
+                    dir.join("uncached_decode.int8.onnx")
+                        .to_string_lossy()
+                        .into_owned(),
+                ),
+                cached_decoder: Some(
+                    dir.join("cached_decode.int8.onnx")
+                        .to_string_lossy()
+                        .into_owned(),
+                ),
+                merged_decoder: None,
+            }
         };
         config.model_config.tokens = Some(dir.join("tokens.txt").to_string_lossy().into_owned());
         config.model_config.provider = Some("cpu".into());
