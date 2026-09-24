@@ -1,5 +1,9 @@
 # dictation
 
+[![License: GPL v3+](https://img.shields.io/badge/license-GPLv3%2B-blue.svg)](LICENSE)
+![Platform: Linux](https://img.shields.io/badge/platform-Linux%20%7C%20Wayland-89b4fa)
+![Inference: Local](https://img.shields.io/badge/inference-local%20%28offline%29-89b4fa)
+
 A small, local dictation app I made for an old laptop. Press a shortcut to
 record, speak, and have the words typed into the focused app. A small status
 pill shows when it is listening and when it is finishing the transcription.
